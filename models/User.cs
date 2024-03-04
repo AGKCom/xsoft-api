@@ -14,6 +14,6 @@ namespace xsoft
         public byte[] passwordSalt { get; set; }=new byte[0];
         public string phone { get; set; }=String.Empty;
         public List<Configuration>? configurations {get; set;}
-        public DateTime expirationDate { get; set; }
+        public DateTime expirationDate { get; set; } = DateTime.Now+TimeSpan.FromDays(30);
     }
 }

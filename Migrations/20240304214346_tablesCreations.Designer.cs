@@ -12,8 +12,8 @@ using xsoft.Data;
 namespace xsoft.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20240303130824_usersConfig")]
-    partial class usersConfig
+    [Migration("20240304214346_tablesCreations")]
+    partial class tablesCreations
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

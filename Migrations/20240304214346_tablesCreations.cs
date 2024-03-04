@@ -1,11 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace xsoft.Migrations
 {
     /// <inheritdoc />
-    public partial class usersConfig : Migration
+    public partial class tablesCreations : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -21,6 +22,23 @@ namespace xsoft.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Configuration", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "users",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    email = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    passwordhash = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
+                    passwordSalt = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
+                    phone = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    expirationDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_users", x => x.id);
                 });
 
             migrationBuilder.CreateTable(
@@ -61,6 +79,9 @@ namespace xsoft.Migrations
 
             migrationBuilder.DropTable(
                 name: "Configuration");
+
+            migrationBuilder.DropTable(
+                name: "users");
         }
     }
 }
