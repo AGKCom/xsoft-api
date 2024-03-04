@@ -12,6 +12,6 @@ namespace xsoft.Data
             
         }
 
-        DbSet<User> users => Set<User>();
+        public DbSet<User> users => Set<User>();
     }
 }
