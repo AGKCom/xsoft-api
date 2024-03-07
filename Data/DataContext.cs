@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using xsoft.models;
+
 namespace xsoft.Data
 {
     public class DataContext :DbContext
@@ -13,5 +15,6 @@ namespace xsoft.Data
         }
 
         public DbSet<User> users => Set<User>();
+        public DbSet<Configuration> configurations => Set<Configuration>();
     }
 }
