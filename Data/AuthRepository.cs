@@ -24,7 +24,7 @@ namespace xsoft
         public async Task<ServiceResponse<string>> Login(string email, string password)
         {
            var response = new ServiceResponse<string>();
-           var user = await _context.users.FirstOrDefaultAsync(u => u.email.ToLower().Equals(email.ToLower()));
+           var user = await _context.Users.FirstOrDefaultAsync(u => u.email.ToLower().Equals(email.ToLower()));
             if (user is null) 
             { 
                 response.Success = false;
@@ -80,7 +80,7 @@ namespace xsoft
             user.passwordhash = passwordHash;
             user.passwordSalt = passwordSalt;
 
-            _context.users.Add(user);
+            _context.Users.Add(user);
             await _context.SaveChangesAsync();
             response.Data = user.id;
             return response;
@@ -88,7 +88,7 @@ namespace xsoft
 
         public async Task<bool> UserExists(string email)
         {
-            if (await _context.users.AnyAsync(u=>u.email.ToLower()==email.ToLower()))
+            if (await _context.Users.AnyAsync(u=>u.email.ToLower()==email.ToLower()))
             {
                 return true;
             }

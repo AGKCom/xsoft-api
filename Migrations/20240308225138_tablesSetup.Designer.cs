@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using xsoft.Data;
 
@@ -11,9 +12,11 @@ using xsoft.Data;
 namespace xsoft.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20240308225138_tablesSetup")]
+    partial class tablesSetup
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,6 +24,21 @@ namespace xsoft.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("ConfigurationUser", b =>
+                {
+                    b.Property<int>("configurationsId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("usersid")
+                        .HasColumnType("int");
+
+                    b.HasKey("configurationsId", "usersid");
+
+                    b.HasIndex("usersid");
+
+                    b.ToTable("ConfigurationUser");
+                });
 
             modelBuilder.Entity("xsoft.User", b =>
                 {
@@ -71,48 +89,19 @@ namespace xsoft.Migrations
                     b.ToTable("Configurations");
                 });
 
-            modelBuilder.Entity("xsoft.models.UserConfiguration", b =>
+            modelBuilder.Entity("ConfigurationUser", b =>
                 {
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ConfigurationId")
-                        .HasColumnType("int");
-
-                    b.HasKey("UserId", "ConfigurationId");
-
-                    b.HasIndex("ConfigurationId");
-
-                    b.ToTable("UserConfiguration");
-                });
-
-            modelBuilder.Entity("xsoft.models.UserConfiguration", b =>
-                {
-                    b.HasOne("xsoft.models.Configuration", "Configuration")
-                        .WithMany("UserConfigurations")
-                        .HasForeignKey("ConfigurationId")
+                    b.HasOne("xsoft.models.Configuration", null)
+                        .WithMany()
+                        .HasForeignKey("configurationsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("xsoft.User", "User")
-                        .WithMany("UserConfigurations")
-                        .HasForeignKey("UserId")
+                    b.HasOne("xsoft.User", null)
+                        .WithMany()
+                        .HasForeignKey("usersid")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Configuration");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("xsoft.User", b =>
-                {
-                    b.Navigation("UserConfigurations");
-                });
-
-            modelBuilder.Entity("xsoft.models.Configuration", b =>
-                {
-                    b.Navigation("UserConfigurations");
                 });
 #pragma warning restore 612, 618
         }

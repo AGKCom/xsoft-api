@@ -27,14 +27,14 @@ namespace xsoft.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
-            return await _context.users.ToListAsync();
+            return await _context.Users.ToListAsync();
         }
 
         // GET: api/v1/User/5
         [HttpGet("{id}")]
         public async Task<ActionResult<User>> GetUser(int id)
         {
-            var user = await _context.users.FindAsync(id);
+            var user = await _context.Users.FindAsync(id);
 
             if (user == null)
             {
@@ -42,6 +42,16 @@ namespace xsoft.Controllers
             }
 
             return user;
+        }
+
+        [HttpGet("FullUsers")]
+        public async Task<ActionResult<IEnumerable<User>>> GetAllUsersWithConfigurations()
+        {
+            return await _context.Users
+                .Include(u => u.UserConfigurations)
+                    .ThenInclude(uc => uc.Configuration)
+                .AsNoTracking()
+                .ToListAsync();
         }
 
         // PUT: api/v1/User/5
@@ -75,11 +85,30 @@ namespace xsoft.Controllers
             return NoContent();
         }
 
+        // GET: api/v1/User/FullUser/5
+        [HttpGet("FullUser/{id}")]
+        public async Task<ActionResult<User>> GetFullUserById(int id)
+        {
+            var user = await _context.Users
+                .Where(u => u.id == id)
+                .Include(u => u.UserConfigurations)
+                    .ThenInclude(uc => uc.Configuration)
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            return user;
+        }
+
         // POST: api/v1/User
         [HttpPost]
         public async Task<ActionResult<User>> CreateUser(User user)
         {
-            _context.users.Add(user);
+            _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetUser), new { id = user.id }, user);
@@ -89,13 +118,13 @@ namespace xsoft.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            var user = await _context.users.FindAsync(id);
+            var user = await _context.Users.FindAsync(id);
             if (user == null)
             {
                 return NotFound();
             }
 
-            _context.users.Remove(user);
+            _context.Users.Remove(user);
             await _context.SaveChangesAsync();
 
             return NoContent();
@@ -103,7 +132,7 @@ namespace xsoft.Controllers
 
         private bool UserExists(int id)
         {
-            return _context.users.Any(e => e.id == id);
+            return _context.Users.Any(e => e.id == id);
         }
 
       

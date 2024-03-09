@@ -6,26 +6,26 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace xsoft.Migrations
 {
     /// <inheritdoc />
-    public partial class tablesCreations : Migration
+    public partial class tablesSetup : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Configuration",
+                name: "Configurations",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     connectionString = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Configuration", x => x.id);
+                    table.PrimaryKey("PK_Configurations", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "users",
+                name: "Users",
                 columns: table => new
                 {
                     id = table.Column<int>(type: "int", nullable: false)
@@ -38,29 +38,29 @@ namespace xsoft.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_users", x => x.id);
+                    table.PrimaryKey("PK_Users", x => x.id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "ConfigurationUser",
                 columns: table => new
                 {
-                    configurationsid = table.Column<int>(type: "int", nullable: false),
+                    configurationsId = table.Column<int>(type: "int", nullable: false),
                     usersid = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ConfigurationUser", x => new { x.configurationsid, x.usersid });
+                    table.PrimaryKey("PK_ConfigurationUser", x => new { x.configurationsId, x.usersid });
                     table.ForeignKey(
-                        name: "FK_ConfigurationUser_Configuration_configurationsid",
-                        column: x => x.configurationsid,
-                        principalTable: "Configuration",
-                        principalColumn: "id",
+                        name: "FK_ConfigurationUser_Configurations_configurationsId",
+                        column: x => x.configurationsId,
+                        principalTable: "Configurations",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_ConfigurationUser_users_usersid",
+                        name: "FK_ConfigurationUser_Users_usersid",
                         column: x => x.usersid,
-                        principalTable: "users",
+                        principalTable: "Users",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -78,10 +78,10 @@ namespace xsoft.Migrations
                 name: "ConfigurationUser");
 
             migrationBuilder.DropTable(
-                name: "Configuration");
+                name: "Configurations");
 
             migrationBuilder.DropTable(
-                name: "users");
+                name: "Users");
         }
     }
 }

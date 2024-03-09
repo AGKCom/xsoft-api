@@ -12,8 +12,8 @@ using xsoft.Data;
 namespace xsoft.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20240304214346_tablesCreations")]
-    partial class tablesCreations
+    [Migration("20240308230723_AddUserConfigurationManyToMany")]
+    partial class AddUserConfigurationManyToMany
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,21 +24,6 @@ namespace xsoft.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("ConfigurationUser", b =>
-                {
-                    b.Property<int>("configurationsid")
-                        .HasColumnType("int");
-
-                    b.Property<int>("usersid")
-                        .HasColumnType("int");
-
-                    b.HasKey("configurationsid", "usersid");
-
-                    b.HasIndex("usersid");
-
-                    b.ToTable("ConfigurationUser");
-                });
 
             modelBuilder.Entity("xsoft.User", b =>
                 {
@@ -69,39 +54,68 @@ namespace xsoft.Migrations
 
                     b.HasKey("id");
 
-                    b.ToTable("users");
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("xsoft.models.Configuration", b =>
                 {
-                    b.Property<int>("id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("connectionString")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("id");
+                    b.HasKey("Id");
 
-                    b.ToTable("Configuration");
+                    b.ToTable("Configurations");
                 });
 
-            modelBuilder.Entity("ConfigurationUser", b =>
+            modelBuilder.Entity("xsoft.models.UserConfiguration", b =>
                 {
-                    b.HasOne("xsoft.models.Configuration", null)
-                        .WithMany()
-                        .HasForeignKey("configurationsid")
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ConfigurationId")
+                        .HasColumnType("int");
+
+                    b.HasKey("UserId", "ConfigurationId");
+
+                    b.HasIndex("ConfigurationId");
+
+                    b.ToTable("UserConfiguration");
+                });
+
+            modelBuilder.Entity("xsoft.models.UserConfiguration", b =>
+                {
+                    b.HasOne("xsoft.models.Configuration", "Configuration")
+                        .WithMany("UserConfigurations")
+                        .HasForeignKey("ConfigurationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("xsoft.User", null)
-                        .WithMany()
-                        .HasForeignKey("usersid")
+                    b.HasOne("xsoft.User", "User")
+                        .WithMany("UserConfigurations")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Configuration");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("xsoft.User", b =>
+                {
+                    b.Navigation("UserConfigurations");
+                });
+
+            modelBuilder.Entity("xsoft.models.Configuration", b =>
+                {
+                    b.Navigation("UserConfigurations");
                 });
 #pragma warning restore 612, 618
         }

@@ -7,8 +7,8 @@ namespace xsoft.models
 {
     public class Configuration
     {
-        public int id { get; set; }
+        public int Id { get; set; }
         public string connectionString { get; set; }=String.Empty;
-        public List<User>? users {get;set;}
+        public List<UserConfiguration> UserConfigurations { get; set; }=new List<UserConfiguration>();
     }
 }
