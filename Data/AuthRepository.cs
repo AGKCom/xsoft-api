@@ -35,11 +35,21 @@ namespace xsoft
                 response.Success= false;
                 response.Message = "Invalid email or password.";
             }
+            else if (AccountExpired(user))
+            {
+                response.Success = false;
+                response.Message = "This Account is expired.";
+            }
             else
             {
                 response.Data = CreateToken(user);
             }
             return response;
+        }
+
+        private bool AccountExpired(User user)
+        {
+            return user.expirationDate < DateTime.UtcNow;
         }
 
         public async Task<ServiceResponse<int>> Register(User user, string password)
