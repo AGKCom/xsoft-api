@@ -135,6 +135,33 @@ namespace xsoft.Controllers
             return _context.Users.Any(e => e.id == id);
         }
 
+        [HttpPost("test")]
+        public async Task<IActionResult> TestConnection(Configuration configuration)
+        {
+            //try to establish sql server connection
+            var connectionString = configuration.GetConnectionString();
+
+            // Using Entity Framework Core's DbContext to test the connection
+            var optionsBuilder = new DbContextOptionsBuilder<DbContext>();
+            optionsBuilder.UseSqlServer(connectionString);
+
+            // Try to open the database connection
+            try
+            {
+                using (var context = new DbContext(optionsBuilder.Options))
+                {
+                    // If this succeeds, the connection is fine
+                    await context.Database.ExecuteSqlRawAsync("SELECT 1");
+                    return Ok("Connection successful.");
+                }
+            }
+            catch (Exception ex)
+            {
+                // If an exception occurs, connection is not successful
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Connection failed: {ex.Message}");
+            }
+        }
+
       
 
     }

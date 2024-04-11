@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,5 +15,9 @@ namespace xsoft.models
         public string dbUser { get; set; } = String.Empty;
         public string dbPassword { get; set; } = String.Empty;
         public List<UserConfiguration> UserConfigurations { get; set; }=new List<UserConfiguration>();
+        public string GetConnectionString()
+        {
+            return $"Server={this.dbHost};Database={this.database};User Id={this.dbUser};Password={this.dbPassword};TrustServerCertificate=True;";
+        }
     }
 }
