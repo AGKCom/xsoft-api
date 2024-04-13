@@ -144,7 +144,7 @@ namespace xsoft.Controllers
             // Using Entity Framework Core's DbContext to test the connection
             var optionsBuilder = new DbContextOptionsBuilder<DbContext>();
             optionsBuilder.UseSqlServer(connectionString);
-
+            
             // Try to open the database connection
             try
             {
@@ -152,13 +152,23 @@ namespace xsoft.Controllers
                 {
                     // If this succeeds, the connection is fine
                     await context.Database.ExecuteSqlRawAsync("SELECT 1");
-                    return Ok("Connection successful.");
+                    return new ContentResult
+                    {
+                        ContentType = "application/json",
+                        StatusCode = 200,
+                        Content = "{\"success\":\"true\",\"message\": \"Connection successful.\"}"
+                    };
                 }
             }
             catch (Exception ex)
             {
                 // If an exception occurs, connection is not successful
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Connection failed: {ex.Message}");
+                return new ContentResult
+                {
+                    ContentType = "application/json",
+                    StatusCode = 200,
+                    Content = $"{{\"success\":\"false\",\"message\": \"Connection failed: {ex.Message}\"}}"
+                };
             }
         }
 
