@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using xsoft.models;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace xsoft.Controllers
 {
@@ -156,23 +157,21 @@ namespace xsoft.Controllers
                     {
                         ContentType = "application/json",
                         StatusCode = 200,
-                        Content = "{\"success\":\"true\",\"message\": \"Connection successful.\"}"
+                        Content = "{\"success\":true,\"message\": \"Connection successful.\"}"
                     };
                 }
             }
             catch (Exception ex)
             {
                 // If an exception occurs, connection is not successful
+                var message = "Connection failed: " + ex.Message.Replace('"', '\'').Replace("\r\n", " ").Replace("\n", " ").Replace("\r", " ");
                 return new ContentResult
                 {
                     ContentType = "application/json",
                     StatusCode = 200,
-                    Content = $"{{\"success\":\"false\",\"message\": \"Connection failed: {ex.Message}\"}}"
+                    Content = "{\"success\":false,\"message\":\" "+ message + "\"}"
                 };
             }
         }
-
-      
-
     }
 }
