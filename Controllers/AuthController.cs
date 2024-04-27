@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using xsoft.Dtos.User;
+using xsoft.Dtos.Client;
 
 namespace xsoft.Controllers
 {
@@ -14,10 +14,10 @@ namespace xsoft.Controllers
             _authRepository = authRepository;
         }
         [HttpPost("register")]
-        public async Task<ActionResult<ServiceResponse<int>>> Register(UserRegisterDto request )
+        public async Task<ActionResult<ServiceResponse<int>>> Register(ClientRegisterDto request )
         {
             var response = await _authRepository.Register(
-                new User { email = request.email},  request.password
+                new Client { email = request.email},  request.password
                 );
             if (!response.Success)
             {
@@ -27,7 +27,7 @@ namespace xsoft.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<ServiceResponse<int>>> Login(UserLoginDto request)
+        public async Task<ActionResult<ServiceResponse<int>>> Login(ClientLoginDto request)
         {
             var response = await _authRepository.Login(request.email , request.password);
             if (!response.Success)

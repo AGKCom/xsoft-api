@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace xsoft.Dtos.User
+namespace xsoft.Dtos.Client
 {
-    public class UserDto
+    public class ClientDto
     {
         public int Id { get; set; }
         public string email { get; set; }=String.Empty;

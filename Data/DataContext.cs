@@ -16,20 +16,21 @@ namespace xsoft.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<UserConfiguration>()
-                .HasKey(uc => new { uc.UserId, uc.ConfigurationId });
+   
 
-            modelBuilder.Entity<UserConfiguration>()
-                .HasOne(uc => uc.User)
-                .WithMany(u => u.UserConfigurations)
-                .HasForeignKey(uc => uc.UserId);
+            modelBuilder.Entity<Client>()
+                .HasMany(c => c.collaborators)
+                .WithOne(e => e.client)
+                .HasForeignKey(e => e.clientId);
 
-            modelBuilder.Entity<UserConfiguration>()
-                .HasOne(uc => uc.Configuration)
-                .WithMany(c => c.UserConfigurations)
-                .HasForeignKey(uc => uc.ConfigurationId);
+
+            modelBuilder.Entity<Client>()
+                .HasMany(c => c.Configurations)
+                .WithOne(e => e.client)
+                .HasForeignKey(e => e.clientId);
         }
-        public DbSet<User> Users => Set<User>();
+        public DbSet<Client> Clients => Set<Client>();
         public DbSet<Configuration> Configurations => Set<Configuration>();
+        public DbSet<Collaborator> Collaborators => Set<Collaborator>();
     }
 }

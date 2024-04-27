@@ -8,13 +8,14 @@ namespace xsoft.models
 {
     public class Configuration
     {
-        public int Id { get; set; }
+        public int id { get; set; }
         public string companyName { get; set; } = String.Empty;
         public string dbHost { get; set; } = String.Empty;
         public string database { get; set; } = String.Empty;
         public string dbUser { get; set; } = String.Empty;
         public string dbPassword { get; set; } = String.Empty;
-        public List<UserConfiguration> UserConfigurations { get; set; }=new List<UserConfiguration>();
+        public Client client { get; set; }
+        public int clientId { get; set; }
         public string GetConnectionString()
         {
             return $"Server={this.dbHost};Database={this.database};User Id={this.dbUser};Password={this.dbPassword};TrustServerCertificate=True;";

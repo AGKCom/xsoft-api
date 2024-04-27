@@ -1,6 +1,7 @@
-﻿namespace xsoft.Dtos.User
+﻿namespace xsoft.Dtos.Client
+
 {
-    public class UserRegisterDto
+    public class ClientRegisterDto
     {
         public string email { get; set; } = String.Empty;
         public string password { get; set; }= String.Empty;

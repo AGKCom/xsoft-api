@@ -12,8 +12,8 @@ using xsoft.Data;
 namespace xsoft.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20240401003515_updateConfigurationsDBCreds")]
-    partial class updateConfigurationsDBCreds
+    [Migration("20240427012810_update-all-roles-of-applicationUsers")]
+    partial class updateallrolesofapplicationUsers
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,7 +25,7 @@ namespace xsoft.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("xsoft.User", b =>
+            modelBuilder.Entity("xsoft.Client", b =>
                 {
                     b.Property<int>("id")
                         .ValueGeneratedOnAdd()
@@ -39,6 +39,16 @@ namespace xsoft.Migrations
 
                     b.Property<DateTime>("expirationDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<bool>("isConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("maxCollaborators")
+                        .HasColumnType("int");
+
+                    b.Property<string>("organization")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<byte[]>("passwordSalt")
                         .IsRequired()
@@ -54,16 +64,56 @@ namespace xsoft.Migrations
 
                     b.HasKey("id");
 
-                    b.ToTable("Users");
+                    b.ToTable("Clients");
+                });
+
+            modelBuilder.Entity("xsoft.Collaborator", b =>
+                {
+                    b.Property<int>("id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id"));
+
+                    b.Property<int>("clientId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("isConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("passwordSalt")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<byte[]>("passwordhash")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.HasKey("id");
+
+                    b.HasIndex("clientId");
+
+                    b.ToTable("Collaborators");
                 });
 
             modelBuilder.Entity("xsoft.models.Configuration", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id"));
+
+                    b.Property<int>("clientId")
+                        .HasColumnType("int");
 
                     b.Property<string>("companyName")
                         .IsRequired()
@@ -85,53 +135,40 @@ namespace xsoft.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Id");
+                    b.HasKey("id");
+
+                    b.HasIndex("clientId");
 
                     b.ToTable("Configurations");
                 });
 
-            modelBuilder.Entity("xsoft.models.UserConfiguration", b =>
+            modelBuilder.Entity("xsoft.Collaborator", b =>
                 {
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ConfigurationId")
-                        .HasColumnType("int");
-
-                    b.HasKey("UserId", "ConfigurationId");
-
-                    b.HasIndex("ConfigurationId");
-
-                    b.ToTable("UserConfiguration");
-                });
-
-            modelBuilder.Entity("xsoft.models.UserConfiguration", b =>
-                {
-                    b.HasOne("xsoft.models.Configuration", "Configuration")
-                        .WithMany("UserConfigurations")
-                        .HasForeignKey("ConfigurationId")
+                    b.HasOne("xsoft.Client", "client")
+                        .WithMany("collaborators")
+                        .HasForeignKey("clientId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("xsoft.User", "User")
-                        .WithMany("UserConfigurations")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Configuration");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("xsoft.User", b =>
-                {
-                    b.Navigation("UserConfigurations");
+                    b.Navigation("client");
                 });
 
             modelBuilder.Entity("xsoft.models.Configuration", b =>
                 {
-                    b.Navigation("UserConfigurations");
+                    b.HasOne("xsoft.Client", "client")
+                        .WithMany("Configurations")
+                        .HasForeignKey("clientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("client");
+                });
+
+            modelBuilder.Entity("xsoft.Client", b =>
+                {
+                    b.Navigation("Configurations");
+
+                    b.Navigation("collaborators");
                 });
 #pragma warning restore 612, 618
         }

@@ -47,7 +47,7 @@ namespace xsoft.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateConfiguration(int id, Configuration configuration)
         {
-            if (id != configuration.Id)
+            if (id != configuration.id)
             {
                 return BadRequest();
             }
@@ -80,7 +80,7 @@ namespace xsoft.Controllers
             _context.Configurations.Add(configuration);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetConfiguration), new { id = configuration.Id }, configuration);
+            return CreatedAtAction(nameof(GetConfiguration), new { id = configuration.id }, configuration);
         }
 
         // DELETE: api/v1/Configuration/5
@@ -101,7 +101,7 @@ namespace xsoft.Controllers
 
         private bool ConfigurationExists(int id)
         {
-            return _context.Configurations.Any(e => e.Id == id);
+            return _context.Configurations.Any(e => e.id == id);
         }
     }
 }

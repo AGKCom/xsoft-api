@@ -24,7 +24,7 @@ namespace xsoft
         public async Task<ServiceResponse<string>> Login(string email, string password)
         {
            var response = new ServiceResponse<string>();
-           var user = await _context.Users.FirstOrDefaultAsync(u => u.email.ToLower().Equals(email.ToLower()));
+           var user = await _context.Clients.FirstOrDefaultAsync(u => u.email.ToLower().Equals(email.ToLower()));
             if (user is null) 
             { 
                 response.Success = false;
@@ -47,12 +47,12 @@ namespace xsoft
             return response;
         }
 
-        private bool AccountExpired(User user)
+        private bool AccountExpired(Client user)
         {
             return user.expirationDate < DateTime.UtcNow;
         }
 
-        public async Task<ServiceResponse<int>> Register(User user, string password)
+        public async Task<ServiceResponse<int>> Register(Client user, string password)
         {
             var response = new ServiceResponse<int>();
             var errorMessages = new List<string>();
@@ -90,7 +90,7 @@ namespace xsoft
             user.passwordhash = passwordHash;
             user.passwordSalt = passwordSalt;
 
-            _context.Users.Add(user);
+            _context.Clients.Add(user);
             await _context.SaveChangesAsync();
             response.Data = user.id;
             return response;
@@ -98,7 +98,7 @@ namespace xsoft
 
         public async Task<bool> UserExists(string email)
         {
-            if (await _context.Users.AnyAsync(u=>u.email.ToLower()==email.ToLower()))
+            if (await _context.Clients.AnyAsync(u=>u.email.ToLower()==email.ToLower()))
             {
                 return true;
             }
@@ -122,7 +122,7 @@ namespace xsoft
                 return computedHash.SequenceEqual(passwordHash);
             }
         }
-        private string CreateToken(User user)
+        private string CreateToken(Client user)
         {
             var claims = new List<Claim>
             {
