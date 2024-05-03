@@ -14,8 +14,9 @@ namespace xsoft.models
         public string database { get; set; } = String.Empty;
         public string dbUser { get; set; } = String.Empty;
         public string dbPassword { get; set; } = String.Empty;
-        public Client client { get; set; }
-        public int clientId { get; set; }
+        public User owner { get; set; }
+        public int ownerId { get; set; }
+        public List<User> collaborators { get; set; }
         public string GetConnectionString()
         {
             return $"Server={this.dbHost};Database={this.database};User Id={this.dbUser};Password={this.dbPassword};TrustServerCertificate=True;";

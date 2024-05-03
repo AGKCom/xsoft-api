@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace xsoft.Dtos.Client
+namespace xsoft.Dtos.Authentication
 {
-    public class ClientDto
+    public class AuthDto
     {
         public int Id { get; set; }
         public string email { get; set; }=String.Empty;
         public string phone { get; set; }=String.Empty;
-        public DateTime expirationDate { get; set; }
+        public bool isActive { get; set; }
 
     }
 }

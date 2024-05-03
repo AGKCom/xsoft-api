@@ -21,6 +21,7 @@
   </ItemGroup> 
 
   <ItemGroup>
+    <Folder Include="Dtos\User\" />
     <Folder Include="Migrations\" />
   </ItemGroup>
 

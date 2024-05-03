@@ -13,12 +13,12 @@ namespace xsoft.Controllers
     [Authorize]
     [Route("api/v1/[controller]")]
     [ApiController]
-    public class ClientController : ControllerBase
+    public class UserController : ControllerBase
     {
         private readonly DataContext _context;
         private readonly IAuthRepository _authRepository;
 
-        public ClientController(DataContext context, IAuthRepository authRepository)
+        public UserController(DataContext context, IAuthRepository authRepository)
         {
             _context = context;
             _authRepository = authRepository;
@@ -26,16 +26,16 @@ namespace xsoft.Controllers
 
         // GET: api/v1/User
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Client>>> GetUsers()
+        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
-            return await _context.Clients.ToListAsync();
+            return await _context.Users.ToListAsync();
         }
 
         // GET: api/v1/User/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Client>> GetUser(int id)
+        public async Task<ActionResult<User>> GetUser(int id)
         {
-            var user = await _context.Clients.FindAsync(id);
+            var user = await _context.Users.FindAsync(id);
 
             if (user == null)
             {
@@ -46,10 +46,10 @@ namespace xsoft.Controllers
         }
 
         [HttpGet("FullUsers")]
-        public async Task<ActionResult<IEnumerable<Client>>> GetAllUsersWithConfigurations()
+        public async Task<ActionResult<IEnumerable<User>>> GetAllUsersWithConfigurations()
         {
-            return await _context.Clients
-                .Include(u => u.Configurations)
+            return await _context.Users
+                .Include(u => u)
                 .AsNoTracking()
                 .ToListAsync();
         }
@@ -57,7 +57,7 @@ namespace xsoft.Controllers
         // PUT: api/v1/User/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser(int id, Client user)
+        public async Task<IActionResult> UpdateUser(int id, User user)
         {
             if (id != user.id)
             {
@@ -87,11 +87,11 @@ namespace xsoft.Controllers
 
         // GET: api/v1/User/FullUser/5
         [HttpGet("FullUser/{id}")]
-        public async Task<ActionResult<Client>> GetFullUserById(int id)
+        public async Task<ActionResult<User>> GetFullUserById(int id)
         {
-            var user = await _context.Clients
+            var user = await _context.Users
                 .Where(u => u.id == id)
-                .Include(u => u.Configurations)
+              
                 .AsNoTracking()
                 .FirstOrDefaultAsync();
 
@@ -105,9 +105,9 @@ namespace xsoft.Controllers
 
         // POST: api/v1/User
         [HttpPost]
-        public async Task<ActionResult<Client>> CreateUser(Client user)
+        public async Task<ActionResult<User>> CreateUser(User user)
         {
-            _context.Clients.Add(user);
+            _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetUser), new { id = user.id }, user);
@@ -117,13 +117,13 @@ namespace xsoft.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            var user = await _context.Clients.FindAsync(id);
+            var user = await _context.Users.FindAsync(id);
             if (user == null)
             {
                 return NotFound();
             }
 
-            _context.Clients.Remove(user);
+            _context.Users.Remove(user);
             await _context.SaveChangesAsync();
 
             return NoContent();
@@ -131,7 +131,7 @@ namespace xsoft.Controllers
 
         private bool UserExists(int id)
         {
-            return _context.Clients.Any(e => e.id == id);
+            return _context.Users.Any(e => e.id == id);
         }
 
         [HttpPost("test")]
