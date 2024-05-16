@@ -59,7 +59,7 @@ namespace xsoft.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(int id, User user)
         {
-            if (id != user.id)
+            if (id != user.Id)
             {
                 return BadRequest();
             }
@@ -90,7 +90,7 @@ namespace xsoft.Controllers
         public async Task<ActionResult<User>> GetFullUserById(int id)
         {
             var user = await _context.Users
-                .Where(u => u.id == id)
+                .Where(u => u.Id == id)
               
                 .AsNoTracking()
                 .FirstOrDefaultAsync();
@@ -110,7 +110,7 @@ namespace xsoft.Controllers
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetUser), new { id = user.id }, user);
+            return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
         }
 
         // DELETE: api/v1/User/5
@@ -131,7 +131,7 @@ namespace xsoft.Controllers
 
         private bool UserExists(int id)
         {
-            return _context.Users.Any(e => e.id == id);
+            return _context.Users.Any(e => e.Id == id);
         }
 
         [HttpPost("test")]

@@ -24,22 +24,18 @@ namespace xsoft
         public async Task<ServiceResponse<string>> Login(string email, string password)
         {
            var response = new ServiceResponse<string>();
-           var user = await _context.Users.FirstOrDefaultAsync(u => u.email.ToLower().Equals(email.ToLower()));
+           var user = await _context.Users.FirstOrDefaultAsync(u => u.Email.ToLower().Equals(email.ToLower()));
             if (user is null) 
             { 
                 response.Success = false;
                 response.Message = "User ["+ email+"] not fount.";
             }
-            else if(!VerifyPasswordHash(password,user.passwordhash,user.passwordSalt)) 
+            else if(!VerifyPasswordHash(password,user.PasswordHash,user.PasswordSalt)) 
             {
                 response.Success= false;
                 response.Message = "Invalid email or password.";
             }
-            else if (AccountExpired(user))
-            {
-                response.Success = false;
-                response.Message = "This Account is expired.";
-            }
+            
             else
             {
                 response.Data = CreateToken(user);
@@ -47,14 +43,7 @@ namespace xsoft
             return response;
         }
 
-        private bool AccountExpired(Admin adm)
-        {
-            var user = new User();
-
-
-            return user.expirationDate < DateTime.UtcNow;
-        }
-
+       
         public async Task<ServiceResponse<int>> Register(User user, string password)
         {
             var response = new ServiceResponse<int>();
@@ -62,7 +51,7 @@ namespace xsoft
 
             // Email regex pattern
             string emailPattern = @"^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$";
-            if (!Regex.IsMatch(user.email, emailPattern))
+            if (!Regex.IsMatch(user.Email, emailPattern))
             {
                 errorMessages.Add("Invalid email format");
             }
@@ -74,9 +63,9 @@ namespace xsoft
                 errorMessages.Add("Password must be at least 6 characters long and include at least one lowercase letter, one uppercase letter, one number, and one special character");
             }
 
-            if (await UserExists(user.email))
+            if (await UserExists(user.Email))
             {
-                errorMessages.Add($"{user.email} User already exists");
+                errorMessages.Add($"{user.Email} User already exists");
             }
 
             // If there are any error messages, concatenate them and return
@@ -90,18 +79,18 @@ namespace xsoft
 
             // If validation passed, proceed with user registration
             CreatePasswordHash(password, out byte[] passwordHash, out byte[] passwordSalt);
-            user.passwordhash = passwordHash;
-            user.passwordSalt = passwordSalt;
+            user.PasswordHash = passwordHash;
+            user.PasswordSalt = passwordSalt;
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
-            response.Data = user.id;
+            response.Data = user.Id;
             return response;
         }
 
         public async Task<bool> UserExists(string email)
         {
-            if (await _context.Users.AnyAsync(u=>u.email.ToLower()==email.ToLower()))
+            if (await _context.Users.AnyAsync(u=>u.Email.ToLower()==email.ToLower()))
             {
                 return true;
             }
@@ -129,8 +118,8 @@ namespace xsoft
         {
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier,user.id.ToString()),
-                new Claim(ClaimTypes.Email,user.email)
+                new Claim(ClaimTypes.NameIdentifier,user.Id.ToString()),
+                new Claim(ClaimTypes.Email,user.Email)
             };
             var appSettingsToken = _configuration.GetSection("AppSettings:Token").Value;
             if (appSettingsToken is null)

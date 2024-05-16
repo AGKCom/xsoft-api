@@ -17,7 +17,7 @@ namespace xsoft.Controllers
         public async Task<ActionResult<ServiceResponse<int>>> Register(AuthRegisterDto request )
         {
             var response = await _authRepository.Register(
-                new User { email = request.email},  request.password
+                new User { Email = request.email},  request.password
                 );
             if (!response.Success)
             {

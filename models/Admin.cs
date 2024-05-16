@@ -4,9 +4,10 @@ namespace xsoft
 {
     public class Admin
     {
-        public int id { get; set; }
-        public string email { get; set; } = String.Empty;
-        public byte[] passwordhash { get; set; } = new byte[0];
-        public byte[] passwordSalt { get; set; } = new byte[0];
+        public int Id { get; set; }
+        public string Email { get; set; }
+        public byte[] PasswordHash { get; set; }
+        public byte[] PasswordSalt { get; set; }
     }
+
 }
