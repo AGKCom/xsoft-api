@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace xsoft.Migrations
 {
     /// <inheritdoc />
-    public partial class setuptables : Migration
+    public partial class tablessetup : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -80,18 +80,19 @@ namespace xsoft.Migrations
                     Email = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     PasswordHash = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
                     PasswordSalt = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
-                    ConfigurationId = table.Column<int>(type: "int", nullable: false),
+                    profileId = table.Column<int>(type: "int", nullable: false),
                     Type = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Users", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Users_Configurations_ConfigurationId",
-                        column: x => x.ConfigurationId,
-                        principalTable: "Configurations",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        name:"FK_User_Profile",
+                        column: x => x.profileId,
+                        principalTable: "Profiles",
+                        principalColumn:"Id"
+                    );
+                   
                 });
 
             migrationBuilder.CreateTable(
@@ -132,14 +133,12 @@ namespace xsoft.Migrations
                         name: "FK_UserConfigurations_Configurations_ConfigurationId",
                         column: x => x.ConfigurationId,
                         principalTable: "Configurations",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_UserConfigurations_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateIndex(
@@ -156,11 +155,6 @@ namespace xsoft.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_UserConfigurations_ConfigurationId",
                 table: "UserConfigurations",
-                column: "ConfigurationId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Users_ConfigurationId",
-                table: "Users",
                 column: "ConfigurationId");
 
             migrationBuilder.CreateIndex(

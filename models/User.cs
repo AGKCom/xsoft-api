@@ -17,6 +17,8 @@ namespace xsoft
         public int ConfigurationId { get; set; }
         public Configuration Configuration { get; set; } // Navigation property
         public TYPE Type { get; set; }
+        public int profileId { get; set; }
+        public Profile profile { get; set; } // Navigation property
     }
 
 }
