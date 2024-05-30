@@ -10,17 +10,22 @@ using Microsoft.IdentityModel.Tokens;
 using System.Security.AccessControl;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text.Json;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace xsoft
 {
     public class AuthRepository : IAuthRepository
     {
         private readonly IConfiguration _configuration;
+
+        private readonly IServiceScopeFactory _serviceScopeFactory;
+
         private readonly DataContext _context;
-        public AuthRepository(DataContext context, IConfiguration configuration)
+        public AuthRepository(DataContext context, IConfiguration configuration, IServiceScopeFactory serviceScopeFactory)
         {
             _configuration = configuration;
             _context = context;
+            _serviceScopeFactory = serviceScopeFactory;
         }
 
         public async Task<ServiceResponse<string>> Login(string email, string password)
@@ -175,33 +180,38 @@ namespace xsoft
                 return computedHash.SequenceEqual(passwordHash);
             }
         }
-        private async Task StoreToken( string token,string email,string role)
+        private async Task StoreToken(string token, string email, string role)
         {
-
-            var identityJson = new 
+            var identityData = new
             {
-                email=email,
-                role=role
+                email = email,
+                role = role
             };
 
-            string identityJsonStr = JsonSerializer.Serialize(identityJson);
-            var authentication = await _context.Authentications.SingleOrDefaultAsync(a => a.identityJson == identityJsonStr);
+            string identityJson = JsonSerializer.Serialize(identityData);
+
+            var _context = _serviceScopeFactory.CreateScope().ServiceProvider.GetRequiredService<DataContext>();
+            var authentication = await _context.Authentications.SingleOrDefaultAsync(a => a.Token == token);
             if (authentication == null)
             {
                 authentication = new Authentication
                 {
                     Token = token,
-                    identityJson = identityJsonStr
+                    IdentityJson = identityJson,
+                    ExpiresAt = DateTime.UtcNow.AddMinutes(30) // Set the expiration time
                 };
                 _context.Authentications.Add(authentication);
             }
             else
             {
                 authentication.Token = token;
+                authentication.IdentityJson = identityJson;
+                authentication.ExpiresAt = DateTime.UtcNow.AddMinutes(30); // Update the expiration time
                 _context.Authentications.Update(authentication);
             }
             await _context.SaveChangesAsync();
         }
+
 
         private string CreateToken(string email, string id, string role)
         {

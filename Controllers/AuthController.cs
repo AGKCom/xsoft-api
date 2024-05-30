@@ -1,7 +1,16 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Azure.Core;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text.Json;
+using System.Text;
 using xsoft.Dtos.Authentication;
 using xsoft.models;
+using xsoft.Data;
 
 namespace xsoft.Controllers
 {
@@ -10,9 +19,14 @@ namespace xsoft.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthRepository _authRepository;
-        public AuthController(IAuthRepository authRepository)
+        private readonly DataContext _context;
+        private readonly IConfiguration _configuration;
+
+        public AuthController(DataContext context, IConfiguration configuration, IAuthRepository authRepository)
         {
+            _context = context;
             _authRepository = authRepository;
+            _configuration = configuration;
         }
 
         [HttpPost("registerAdmin")]
@@ -63,22 +77,67 @@ namespace xsoft.Controllers
             return Ok(response);
         }
 
-        [Authorize(Roles = "Admin")]
-        [HttpPost("signOutAdmin")]
-        public ActionResult SignOutAdmin()
+        [Authorize]
+        [HttpPost("signOut")]
+        public async Task<ActionResult> SignOut()
         {
-            // Logic to invalidate the token can be implemented here
-            // This might involve maintaining a blacklist of tokens or simply removing them client-side
-            return Ok(new { message = "Admin signed out" });
+            var result = await SignOutUserOrAdmin();
+            if (!result)
+            {
+                return BadRequest(new { message = "Failed to sign out" });
+            }
+            return Ok(new { message = "Signed out successfully" });
         }
 
-        [Authorize(Roles = "User")]
-        [HttpPost("signOutUser")]
-        public ActionResult SignOutUser()
+        private async Task<bool> SignOutUserOrAdmin()
         {
-            // Logic to invalidate the token can be implemented here
-            // This might involve maintaining a blacklist of tokens or simply removing them client-side
-            return Ok(new { message = "User signed out" });
+            if (!HttpContext.Request.Headers.ContainsKey("Authorization"))
+            {
+                return false;
+            }
+
+            var token = HttpContext.Request.Headers["Authorization"].ToString().Split(" ").Last();
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:Token").Value);
+
+            try
+            {
+                var principal = tokenHandler.ValidateToken(token, new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ClockSkew = TimeSpan.Zero
+                }, out SecurityToken validatedToken);
+
+                var email = principal.FindFirst(ClaimTypes.Email)?.Value;
+                var role = principal.FindFirst(ClaimTypes.Role)?.Value;
+
+                if (email == null || role == null)
+                {
+                    return false;
+                }
+
+                var identityData = new { email = email, role = role };
+                var identityJson = JsonSerializer.Serialize(identityData);
+
+                var authentication = await _context.Authentications
+                    .SingleOrDefaultAsync(a => a.IdentityJson == identityJson);
+
+                if (authentication != null)
+                {
+                    _context.Authentications.Remove(authentication);
+                    await _context.SaveChangesAsync();
+                    return true;
+                }
+
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

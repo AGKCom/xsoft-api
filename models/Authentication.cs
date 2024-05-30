@@ -4,6 +4,8 @@
     {
         public int Id { get; set; }
         public string Token { get; set; }
-        public string identityJson { get; set; } //email,role serilized as json
+        public string IdentityJson { get; set; } //email,role serilized as json
+        public DateTime ExpiresAt { get; set; }  // Token expiration time
+
     }
 }

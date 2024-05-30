@@ -3,6 +3,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using xsoft.Data;
+using xsoft.models;
+using System.Text.Json;
 
 public class TokenValidationMiddleware
 {
@@ -30,6 +32,15 @@ public class TokenValidationMiddleware
                 var authentication = await _context.Authentications.SingleOrDefaultAsync(a => a.Token == token);
                 if (authentication != null)
                 {
+                    if (authentication.ExpiresAt < DateTime.UtcNow)
+                    {
+                        _context.Authentications.Remove(authentication);
+                        await _context.SaveChangesAsync();
+                        context.Response.StatusCode = 401;
+                        await context.Response.WriteAsync("Token expired.");
+                        return;
+                    }
+
                     var IdClaim = GetIdFromToken(token);
                     var EmailClaim = GetEmailFromToken(token);
                     var RoleClaim = GetRoleFromToken(token);
@@ -37,6 +48,7 @@ public class TokenValidationMiddleware
                     {
                         var newToken = CreateToken(IdClaim.Value, EmailClaim.Value, RoleClaim.Value);
                         authentication.Token = newToken;
+                        authentication.ExpiresAt = DateTime.UtcNow.AddMinutes(30);  // Update the expiration time
                         _context.Authentications.Update(authentication);
                         await _context.SaveChangesAsync();
 
