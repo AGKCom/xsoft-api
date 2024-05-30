@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace xsoft.Migrations
 {
     /// <inheritdoc />
-    public partial class tablessetup : Migration
+    public partial class setuptables : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -72,30 +72,6 @@ namespace xsoft.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Users",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Email = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    PasswordHash = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
-                    PasswordSalt = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
-                    profileId = table.Column<int>(type: "int", nullable: false),
-                    Type = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Users", x => x.Id);
-                    table.ForeignKey(
-                        name:"FK_User_Profile",
-                        column: x => x.profileId,
-                        principalTable: "Profiles",
-                        principalColumn:"Id"
-                    );
-                   
-                });
-
-            migrationBuilder.CreateTable(
                 name: "ProfilePermissions",
                 columns: table => new
                 {
@@ -120,6 +96,28 @@ namespace xsoft.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Users",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Email = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    PasswordHash = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
+                    PasswordSalt = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
+                    Type = table.Column<int>(type: "int", nullable: false),
+                    profileId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Users", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Users_Profiles_profileId",
+                        column: x => x.profileId,
+                        principalTable: "Profiles",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "UserConfigurations",
                 columns: table => new
                 {
@@ -133,12 +131,14 @@ namespace xsoft.Migrations
                         name: "FK_UserConfigurations_Configurations_ConfigurationId",
                         column: x => x.ConfigurationId,
                         principalTable: "Configurations",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_UserConfigurations_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -162,6 +162,11 @@ namespace xsoft.Migrations
                 table: "Users",
                 column: "Email",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_profileId",
+                table: "Users",
+                column: "profileId");
         }
 
         /// <inheritdoc />
@@ -180,13 +185,13 @@ namespace xsoft.Migrations
                 name: "Permissions");
 
             migrationBuilder.DropTable(
-                name: "Profiles");
+                name: "Configurations");
 
             migrationBuilder.DropTable(
                 name: "Users");
 
             migrationBuilder.DropTable(
-                name: "Configurations");
+                name: "Profiles");
         }
     }
 }

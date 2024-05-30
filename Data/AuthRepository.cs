@@ -16,47 +16,65 @@ namespace xsoft
     {
         private readonly IConfiguration _configuration;
         private readonly DataContext _context;
-        public AuthRepository(DataContext context,IConfiguration configuration)
+        public AuthRepository(DataContext context, IConfiguration configuration)
         {
             _configuration = configuration;
             _context = context;
         }
+
         public async Task<ServiceResponse<string>> Login(string email, string password)
         {
-           var response = new ServiceResponse<string>();
-           var user = await _context.Users.FirstOrDefaultAsync(u => u.Email.ToLower().Equals(email.ToLower()));
-            if (user is null) 
-            { 
-                response.Success = false;
-                response.Message = "User ["+ email+"] not fount.";
-            }
-            else if(!VerifyPasswordHash(password,user.PasswordHash,user.PasswordSalt)) 
+            var response = new ServiceResponse<string>();
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email.ToLower().Equals(email.ToLower()));
+            if (user == null)
             {
-                response.Success= false;
+                response.Success = false;
+                response.Message = $"User [{email}] not found.";
+            }
+            else if (!VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt))
+            {
+                response.Success = false;
                 response.Message = "Invalid email or password.";
             }
-            
             else
             {
-                response.Data = CreateToken(user);
+                response.Data = CreateToken(user.Email, user.Id.ToString(), "User");
             }
             return response;
         }
 
-       
+        public async Task<ServiceResponse<string>> LoginAdmin(string email, string password)
+        {
+            var response = new ServiceResponse<string>();
+            var admin = await _context.Admins.FirstOrDefaultAsync(a => a.Email.ToLower().Equals(email.ToLower()));
+            if (admin == null)
+            {
+                response.Success = false;
+                response.Message = $"Admin [{email}] not found.";
+            }
+            else if (!VerifyPasswordHash(password, admin.PasswordHash, admin.PasswordSalt))
+            {
+                response.Success = false;
+                response.Message = "Invalid email or password.";
+            }
+            else
+            {
+                response.Data = CreateToken(admin.Email, admin.Id.ToString(), "Admin");
+            }
+            return response;
+        }
+
         public async Task<ServiceResponse<int>> Register(User user, string password)
         {
             var response = new ServiceResponse<int>();
             var errorMessages = new List<string>();
 
-            // Email regex pattern
-            string emailPattern = @"^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$";
+            string emailPattern = @"^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.']\w+)*$";
             if (!Regex.IsMatch(user.Email, emailPattern))
             {
                 errorMessages.Add("Invalid email format");
             }
 
-            // Password regex pattern
             string passwordPattern = @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).{6,}$";
             if (!Regex.IsMatch(password, passwordPattern))
             {
@@ -65,19 +83,16 @@ namespace xsoft
 
             if (await UserExists(user.Email))
             {
-                errorMessages.Add($"{user.Email} User already exists");
+                errorMessages.Add($"User with email {user.Email} already exists");
             }
 
-            // If there are any error messages, concatenate them and return
             if (errorMessages.Count > 0)
             {
                 response.Success = false;
-                // Join the error messages using a colon and a space as separators
                 response.Message = string.Join(" ## ", errorMessages);
                 return response;
             }
 
-            // If validation passed, proceed with user registration
             CreatePasswordHash(password, out byte[] passwordHash, out byte[] passwordSalt);
             user.PasswordHash = passwordHash;
             user.PasswordSalt = passwordSalt;
@@ -88,16 +103,56 @@ namespace xsoft
             return response;
         }
 
-        public async Task<bool> UserExists(string email)
+        public async Task<ServiceResponse<int>> RegisterAdmin(Admin admin, string password)
         {
-            if (await _context.Users.AnyAsync(u=>u.Email.ToLower()==email.ToLower()))
+            var response = new ServiceResponse<int>();
+            var errorMessages = new List<string>();
+
+            string emailPattern = @"^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.']\w+)*$";
+            if (!Regex.IsMatch(admin.Email, emailPattern))
             {
-                return true;
+                errorMessages.Add("Invalid email format");
             }
-            return false;
+
+            string passwordPattern = @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).{6,}$";
+            if (!Regex.IsMatch(password, passwordPattern))
+            {
+                errorMessages.Add("Password must be at least 6 characters long and include at least one lowercase letter, one uppercase letter, one number, and one special character");
+            }
+
+            if (await AdminExists(admin.Email))
+            {
+                errorMessages.Add($"Admin with email {admin.Email} already exists");
+            }
+
+            if (errorMessages.Count > 0)
+            {
+                response.Success = false;
+                response.Message = string.Join(" ## ", errorMessages);
+                return response;
+            }
+
+            CreatePasswordHash(password, out byte[] passwordHash, out byte[] passwordSalt);
+            admin.PasswordHash = passwordHash;
+            admin.PasswordSalt = passwordSalt;
+
+            _context.Admins.Add(admin);
+            await _context.SaveChangesAsync();
+            response.Data = admin.Id;
+            return response;
         }
 
-        private void CreatePasswordHash(string password,out byte[] passwordHash,out byte[] passwordSalt ) 
+        public async Task<bool> UserExists(string email)
+        {
+            return await _context.Users.AnyAsync(u => u.Email.ToLower() == email.ToLower());
+        }
+
+        public async Task<bool> AdminExists(string email)
+        {
+            return await _context.Admins.AnyAsync(a => a.Email.ToLower() == email.ToLower());
+        }
+
+        private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
         {
             using (var hmac = new System.Security.Cryptography.HMACSHA512())
             {
@@ -114,19 +169,22 @@ namespace xsoft
                 return computedHash.SequenceEqual(passwordHash);
             }
         }
-        private string CreateToken(User user)
+
+        private string CreateToken(string email, string id, string role)
         {
             var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier,user.Id.ToString()),
-                new Claim(ClaimTypes.Email,user.Email)
-            };
+        {
+            new Claim(ClaimTypes.NameIdentifier, id),
+            new Claim(ClaimTypes.Email, email),
+            new Claim(ClaimTypes.Role, role)
+        };
+
             var appSettingsToken = _configuration.GetSection("AppSettings:Token").Value;
-            if (appSettingsToken is null)
+            if (appSettingsToken == null)
                 throw new Exception("AppSettings Token is null");
-            
-            SymmetricSecurityKey key = new SymmetricSecurityKey (System.Text.Encoding.UTF8.GetBytes (appSettingsToken));
-            SigningCredentials creds = new SigningCredentials (key,SecurityAlgorithms.HmacSha512Signature);
+
+            SymmetricSecurityKey key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(appSettingsToken));
+            SigningCredentials creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
@@ -135,9 +193,9 @@ namespace xsoft
             };
 
             JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
-            SecurityToken token = tokenHandler.CreateToken (tokenDescriptor);
-            return tokenHandler.WriteToken (token);
-
+            SecurityToken token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
         }
     }
+
 }

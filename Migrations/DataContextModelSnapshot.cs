@@ -92,9 +92,6 @@ namespace xsoft.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("ConfigurationId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -110,12 +107,15 @@ namespace xsoft.Migrations
                     b.Property<int>("Type")
                         .HasColumnType("int");
 
-                    b.HasKey("Id");
+                    b.Property<int?>("profileId")
+                        .HasColumnType("int");
 
-                    b.HasIndex("ConfigurationId");
+                    b.HasKey("Id");
 
                     b.HasIndex("Email")
                         .IsUnique();
+
+                    b.HasIndex("profileId");
 
                     b.ToTable("Users");
                 });
@@ -191,19 +191,17 @@ namespace xsoft.Migrations
 
             modelBuilder.Entity("xsoft.User", b =>
                 {
-                    b.HasOne("xsoft.models.Configuration", "Configuration")
-                        .WithMany("Users")
-                        .HasForeignKey("ConfigurationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.HasOne("xsoft.Profile", "profile")
+                        .WithMany()
+                        .HasForeignKey("profileId");
 
-                    b.Navigation("Configuration");
+                    b.Navigation("profile");
                 });
 
             modelBuilder.Entity("xsoft.UserConfiguration", b =>
                 {
                     b.HasOne("xsoft.models.Configuration", "Configuration")
-                        .WithMany()
+                        .WithMany("UserIds")
                         .HasForeignKey("ConfigurationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -245,7 +243,7 @@ namespace xsoft.Migrations
 
             modelBuilder.Entity("xsoft.models.Configuration", b =>
                 {
-                    b.Navigation("Users");
+                    b.Navigation("UserIds");
                 });
 #pragma warning restore 612, 618
         }

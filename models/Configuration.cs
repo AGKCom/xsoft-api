@@ -16,7 +16,7 @@ namespace xsoft.models
         public string DbPassword { get; set; }
         public int MaxUsers { get; set; }
         public DateTime experationDate { get; set; }
-        public List<User> Users { get; set; } // Navigation property
+        public List<UserConfiguration> UserIds { get; set; } 
         public string GetConnectionString()
             {
                 return $"Server={this.DbHost};Database={this.DbName};User Id={this.DbUser};Password={this.DbPassword};TrustServerCertificate=True;";
