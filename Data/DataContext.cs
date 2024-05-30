@@ -39,6 +39,8 @@ namespace xsoft.Data
         public DbSet<Profile> Profiles { get; set; }
         public DbSet<ProfilePermission> ProfilePermissions { get; set; }
         public DbSet<UserConfiguration> UserConfigurations { get; set; }
+        public DbSet<Authentication> Authentications { get; set; }
+
 
     }
 }

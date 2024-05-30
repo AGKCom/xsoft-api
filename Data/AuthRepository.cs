@@ -9,6 +9,7 @@ using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.AccessControl;
 using System.IdentityModel.Tokens.Jwt;
+using System.Text.Json;
 
 namespace xsoft
 {
@@ -39,6 +40,7 @@ namespace xsoft
             else
             {
                 response.Data = CreateToken(user.Email, user.Id.ToString(), "User");
+                await StoreToken(response.Data, user.Email, "User");
             }
             return response;
         }
@@ -60,6 +62,7 @@ namespace xsoft
             else
             {
                 response.Data = CreateToken(admin.Email, admin.Id.ToString(), "Admin");
+                await StoreToken(response.Data,admin.Email,"Admin");
             }
             return response;
         }
@@ -69,12 +72,14 @@ namespace xsoft
             var response = new ServiceResponse<int>();
             var errorMessages = new List<string>();
 
-            string emailPattern = @"^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.']\w+)*$";
+            // Email regex pattern
+            string emailPattern = @"^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$";
             if (!Regex.IsMatch(user.Email, emailPattern))
             {
                 errorMessages.Add("Invalid email format");
             }
 
+            // Password regex pattern
             string passwordPattern = @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).{6,}$";
             if (!Regex.IsMatch(password, passwordPattern))
             {
@@ -86,6 +91,7 @@ namespace xsoft
                 errorMessages.Add($"User with email {user.Email} already exists");
             }
 
+            // If there are any error messages, return them
             if (errorMessages.Count > 0)
             {
                 response.Success = false;
@@ -169,15 +175,42 @@ namespace xsoft
                 return computedHash.SequenceEqual(passwordHash);
             }
         }
+        private async Task StoreToken( string token,string email,string role)
+        {
+
+            var identityJson = new 
+            {
+                email=email,
+                role=role
+            };
+
+            string identityJsonStr = JsonSerializer.Serialize(identityJson);
+            var authentication = await _context.Authentications.SingleOrDefaultAsync(a => a.identityJson == identityJsonStr);
+            if (authentication == null)
+            {
+                authentication = new Authentication
+                {
+                    Token = token,
+                    identityJson = identityJsonStr
+                };
+                _context.Authentications.Add(authentication);
+            }
+            else
+            {
+                authentication.Token = token;
+                _context.Authentications.Update(authentication);
+            }
+            await _context.SaveChangesAsync();
+        }
 
         private string CreateToken(string email, string id, string role)
         {
             var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.NameIdentifier, id),
-            new Claim(ClaimTypes.Email, email),
-            new Claim(ClaimTypes.Role, role)
-        };
+            {
+                new Claim(ClaimTypes.NameIdentifier, id.ToString()),
+                new Claim(ClaimTypes.Email, email),
+                new Claim(ClaimTypes.Role, role)
+            };
 
             var appSettingsToken = _configuration.GetSection("AppSettings:Token").Value;
             if (appSettingsToken == null)
@@ -188,7 +221,7 @@ namespace xsoft
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddDays(1),
+                Expires = DateTime.UtcNow.AddMinutes(30),
                 SigningCredentials = creds
             };
 
