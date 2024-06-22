@@ -26,150 +26,38 @@ namespace xsoft.Controllers
 
         // GET: api/v1/User
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+        public async Task<ActionResult<IEnumerable<User>>> GetCollaborators()
         {
-            return await _context.Users.ToListAsync();
+            //get configuration that the user connected to 
+            //return all colleborators 
+
+            return Ok();
         }
 
-        // GET: api/v1/User/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<User>> GetUser(int id)
-        {
-            var user = await _context.Users.FindAsync(id);
-
-            if (user == null)
-            {
-                return NotFound();
-            }
-
-            return user;
-        }
-
-        [HttpGet("FullUsers")]
-        public async Task<ActionResult<IEnumerable<User>>> GetAllUsersWithConfigurations()
-        {
-            return await _context.Users
-                .Include(u => u)
-                .AsNoTracking()
-                .ToListAsync();
-        }
-
-        // PUT: api/v1/User/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser(int id, User user)
-        {
-            if (id != user.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(user).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!UserExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
-        // GET: api/v1/User/FullUser/5
-        [HttpGet("FullUser/{id}")]
-        public async Task<ActionResult<User>> GetFullUserById(int id)
-        {
-            var user = await _context.Users
-                .Where(u => u.Id == id)
-              
-                .AsNoTracking()
-                .FirstOrDefaultAsync();
-
-            if (user == null)
-            {
-                return NotFound();
-            }
-
-            return user;
-        }
-
-        // POST: api/v1/User
         [HttpPost]
-        public async Task<ActionResult<User>> CreateUser(User user)
+        public async Task<ActionResult<IEnumerable<User>>> AddCollaborator()
         {
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
+            return Ok();
         }
 
-        // DELETE: api/v1/User/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUser(int id)
+        [HttpPatch]
+        public async Task <ActionResult> resetCollaborator()
         {
-            var user = await _context.Users.FindAsync(id);
-            if (user == null)
-            {
-                return NotFound();
-            }
-
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            return Ok();
         }
 
-        private bool UserExists(int id)
+        [HttpPatch]
+        public async Task<ActionResult> activateOwner()
         {
-            return _context.Users.Any(e => e.Id == id);
+            return Ok();
         }
 
-        [HttpPost("test")]
-        public async Task<IActionResult> TestConnection(Configuration configuration)
+        [HttpPatch]
+        public async Task<ActionResult> activactivateCollaborator()
         {
-            //try to establish sql server connection
-            var connectionString = configuration.GetConnectionString();
-
-            // Using Entity Framework Core's DbContext to test the connection
-            var optionsBuilder = new DbContextOptionsBuilder<DbContext>();
-            optionsBuilder.UseSqlServer(connectionString);
-            
-            // Try to open the database connection
-            try
-            {
-                using (var context = new DbContext(optionsBuilder.Options))
-                {
-                    // If this succeeds, the connection is fine
-                    await context.Database.ExecuteSqlRawAsync("SELECT 1");
-                    return new ContentResult
-                    {
-                        ContentType = "application/json",
-                        StatusCode = 200,
-                        Content = "{\"success\":true,\"message\": \"Connection successful.\"}"
-                    };
-                }
-            }
-            catch (Exception ex)
-            {
-                // If an exception occurs, connection is not successful
-                var message = "Connection failed: " + ex.Message.Replace('"', '\'').Replace("\r\n", " ").Replace("\n", " ").Replace("\r", " ");
-                return new ContentResult
-                {
-                    ContentType = "application/json",
-                    StatusCode = 200,
-                    Content = "{\"success\":false,\"message\":\" "+ message + "\"}"
-                };
-            }
+            return Ok();
         }
+
+
     }
 }
