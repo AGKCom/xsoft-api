@@ -40,19 +40,19 @@ namespace xsoft.Controllers
             return Ok();
         }
 
-        [HttpPatch]
+        [HttpPatch("resetCollaborator")]
         public async Task <ActionResult> resetCollaborator()
         {
             return Ok();
         }
 
-        [HttpPatch]
+        [HttpPatch("activateOwner")]
         public async Task<ActionResult> activateOwner()
         {
             return Ok();
         }
 
-        [HttpPatch]
+        [HttpPatch("activactivateCollaborator")]
         public async Task<ActionResult> activactivateCollaborator()
         {
             return Ok();
