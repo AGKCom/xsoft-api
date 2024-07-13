@@ -15,6 +15,7 @@ namespace xsoft
         public string Email { get; set; }
         public byte[] PasswordHash { get; set; }
         public byte[] PasswordSalt { get; set; }
+
         public TYPE Type { get; set; }
         public int? profileId { get; set; }=null;
         public Profile? profile { get; set; } // Navigation property

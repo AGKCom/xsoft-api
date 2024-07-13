@@ -44,7 +44,7 @@ namespace xsoft
             }
             else
             {
-                response.Data = CreateToken(user.Email, user.Id.ToString(), "User");
+                response.Data = CreateToken(user.Email, user.Id.ToString(), "User",user.Type.ToString());
                 await StoreToken(response.Data, user.Email, "User");
             }
             return response;
@@ -107,6 +107,7 @@ namespace xsoft
             CreatePasswordHash(password, out byte[] passwordHash, out byte[] passwordSalt);
             user.PasswordHash = passwordHash;
             user.PasswordSalt = passwordSalt;
+            
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
@@ -213,7 +214,7 @@ namespace xsoft
         }
 
 
-        private string CreateToken(string email, string id, string role)
+        private string CreateToken(string email, string id, string role,string type=null)
         {
             var claims = new List<Claim>
             {
@@ -221,6 +222,11 @@ namespace xsoft
                 new Claim(ClaimTypes.Email, email),
                 new Claim(ClaimTypes.Role, role)
             };
+
+            if (!string.IsNullOrEmpty(type))
+            {
+                claims.Add(new Claim("type", type));
+            }
 
             var appSettingsToken = _configuration.GetSection("AppSettings:Token").Value;
             if (appSettingsToken == null)

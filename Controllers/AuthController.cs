@@ -53,7 +53,7 @@ namespace xsoft.Controllers
         public async Task<ActionResult<ServiceResponse<int>>> RegisterUser(UserRegisterDto request)
         {
             var response = await _authRepository.Register(
-                new User { Email = request.Email }, request.Password
+                new User { Email = request.Email ,Type = request.Type}, request.Password
             );
             if (!response.Success)
             {
